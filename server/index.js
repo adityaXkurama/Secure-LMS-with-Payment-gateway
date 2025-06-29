@@ -7,10 +7,13 @@ import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import mongoSanitize  from 'express-mongo-sanitize';
+import dbConnect from './database/db.js';
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 
 // Global rate Limiting
 const limiter = rateLimit({
@@ -21,8 +24,8 @@ const limiter = rateLimit({
 
 
 //logging middleware
-app.use(helmet())
-app.use(mongoSanitize())
+// app.use(helmet())
+// app.use(mongoSanitize())
 app.use(hpp())
 app.use('/api',limiter)
 
@@ -67,6 +70,9 @@ app.use(cors({
 }))
 
 //API routes
+import healthCheckRouter from './routes/health.routes.js'
+//Health check
+app.use('/health',healthCheckRouter)
 
 
 //404 handler
@@ -77,6 +83,14 @@ app.use((req, res, next) => {
     });
 });
 
+dbConnect().
+then(()=>{
 app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
 })
+})
+.catch(()=>{
+    console.log(`error listening`);
+    
+})
+
